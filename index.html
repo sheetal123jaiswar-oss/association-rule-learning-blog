@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Association Rule Learning | Market Basket Lab</title>
+<style>
+:root{--green:#087f5b;--mint:#d9fbe9;--pink:#ff6b9a;--yellow:#ffcf56;--purple:#7657db;--ink:#173b35;--muted:#657c76;--paper:#fffdf8}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.65}
+nav{position:sticky;top:0;z-index:9;background:#fff;padding:13px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 3px 18px #173b3510}
+.logo{font-weight:900;color:var(--green);font-size:18px}
+nav a{font-size:12px;text-decoration:none;color:var(--ink);margin-left:12px}
+.hero{padding:55px 7%;background:linear-gradient(130deg,#d9fbe9,#fff0f5 55%,#fff1bf);display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:24px}
+.pill{background:white;padding:7px 12px;border-radius:30px;font-size:12px;color:var(--green);font-weight:bold}
+h1{font-size:clamp(37px,6vw,64px);line-height:1.05;margin:22px 0;color:#123d31}
+h1 span{color:var(--pink)}
+p{color:var(--muted)}
+.student{font-size:13px;font-weight:bold;color:var(--green)}
+.btn{display:inline-block;background:var(--green);color:white;border:0;padding:12px 18px;border-radius:12px;text-decoration:none;font-weight:bold;cursor:pointer;margin:6px 4px 0 0}
+.art{background:#fff;padding:18px;border-radius:26px;box-shadow:0 14px 35px #087f5b18}
+section{padding:48px 7%}
+section:nth-of-type(even){background:#f0fbf6}
+.kicker{font-size:12px;letter-spacing:2px;color:var(--green);font-weight:bold}
+h2{font-size:clamp(27px,4vw,38px);margin:6px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:22px}
+.card{background:#fff;border:1px solid #e4eee7;border-radius:19px;padding:20px}
+.card h3{margin:7px 0;color:#174a3b}
+.icon{font-size:29px}
+.formula{background:#173b35;color:#d9fbe9;padding:16px;border-radius:13px;font-family:monospace;overflow-wrap:anywhere;margin:12px 0}
+.panel{background:#fff;padding:21px;border:1px solid #dfede5;border-radius:20px;margin-top:18px}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:14px 0}
+select{padding:10px;border:1px solid #b7d7c6;border-radius:10px;max-width:100%}
+.basket{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.item{background:#fff;border:2px solid #e0e9e2;border-radius:15px;padding:12px;cursor:pointer;min-width:88px;text-align:center}
+.item.selected{border-color:var(--green);background:#d9fbe9;box-shadow:0 3px 0 #087f5b20}
+.item .emoji{display:block;font-size:30px}
+.result{background:#f2eaff;padding:15px;border-radius:14px;color:#443087}
+.step{background:#fff;border-left:4px solid var(--pink);border-radius:0 12px 12px 0;padding:12px 15px;margin:12px 0}
+.note{background:#fff3c9;padding:13px;border-radius:12px;color:#725313;font-size:14px}
+table{border-collapse:collapse;width:100%;background:#fff;margin-top:15px}
+th,td{border:1px solid #e1e9e2;padding:11px;text-align:left}
+th{background:#d9fbe9}
+.quiz button{display:block;width:100%;text-align:left;border:1px solid #e1e9e2;background:#fff;border-radius:10px;padding:12px;margin:9px 0;cursor:pointer}
+.quiz button:hover{border-color:var(--green)}
+footer{background:#173b35;color:white;padding:32px 7%;text-align:center}
+footer p{color:#d9e8df}
+@media(max-width:700px){.hero{grid-template-columns:1fr;padding:40px 6%}.grid{grid-template-columns:1fr}section{padding:38px 6%}nav{padding:12px 4%}nav a{margin-left:6px;font-size:10px}}
+</style>
+</head>
+<body>
+<nav>
+ <div class="logo">🛒 MARKET BASKET LAB</div>
+ <div><a href="#learn">Learn</a><a href="#demo">Try it</a><a href="#quiz">Quiz</a></div>
+</nav>
+
+<header class="hero">
+ <div>
+  <span class="pill">MACHINE LEARNING · UNSUPERVISED PATTERN MINING</span>
+  <h1>What goes together?<br><span>Discover the pattern!</span></h1>
+  <p>How can a store discover that customers who buy bread often buy butter too? Association Rule Learning finds relationships between items that appear together in transaction data.</p>
+  <p class="student">COLLEGE PROJECT · SHEETAL JAISWAR · ROLL NO. 55034</p>
+  <a class="btn" href="#demo">Try the basket demo ↓</a>
+  <a class="btn" href="#learn" style="background:#7657db">Explore the concept</a>
+ </div>
+ <div class="art">
+  <svg viewBox="0 0 360 275" width="100%" role="img" aria-label="Colourful illustration of grocery products in a shopping basket">
+   <rect x="35" y="103" width="290" height="130" rx="24" fill="#d9fbe9"/>
+   <path d="M60 125L85 215H275L300 125Z" fill="#ffcf56" stroke="#087f5b" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M90 140L110 205M145 140L155 205M200 140L200 205M255 140L245 205" stroke="#087f5b" stroke-width="4"/>
+   <path d="M115 132Q85 72 120 42Q160 75 135 130" fill="#35b779"/>
+   <path d="M158 130Q148 66 192 47Q212 95 177 135" fill="#087f5b"/>
+   <circle cx="231" cy="84" r="29" fill="#ff6b9a"/><path d="M231 55Q232 40 244 39" fill="none" stroke="#087f5b" stroke-width="5"/>
+   <rect x="70" y="88" width="50" height="56" rx="9" fill="#7657db"/><rect x="81" y="78" width="28" height="13" rx="4" fill="#b9a8ff"/>
+   <rect x="183" y="100" width="32" height="50" rx="8" fill="#fff" stroke="#087f5b" stroke-width="3"/><path d="M188 118H210M188 128H210" stroke="#ff6b9a" stroke-width="4"/>
+   <text x="180" y="260" text-anchor="middle" fill="#087f5b" font-size="13" font-weight="bold">ONE BASKET • HIDDEN RELATIONSHIPS</text>
+  </svg>
+  <h3>🧺 Every basket tells a story</h3>
+  <p>Patterns can help businesses understand buying behaviour and recommend related products.</p>
+ </div>
+</header>
+
+<section id="learn">
+ <span class="kicker">01 / GET THE IDEA</span>
+ <h2>What is Association Rule Learning?</h2>
+ <p>Association Rule Learning is a data-mining technique used to discover relationships between items in large datasets. It is often used in Market Basket Analysis, where each transaction contains products purchased together.</p>
+ <div class="grid">
+  <div class="card"><div class="icon">🔍</div><h3>Discover patterns</h3><p>Find items that frequently occur together in transactions.</p></div>
+  <div class="card"><div class="icon">🛍️</div><h3>Understand customers</h3><p>Explore common combinations of products in shopping baskets.</p></div>
+  <div class="card"><div class="icon">💡</div><h3>Make decisions</h3><p>Use useful patterns to inform recommendations, offers and store layouts.</p></div>
+ </div>
+ <h3>Learning objectives</h3>
+ <ul>
+  <li>Define association rules and market basket analysis.</li>
+  <li>Understand support, confidence and lift.</li>
+  <li>Explain the Apriori algorithm step by step.</li>
+  <li>Explore practical uses, benefits and limitations.</li>
+ </ul>
+</section>
+
+<section>
+ <span class="kicker">02 / A RULE IN ACTION</span>
+ <h2>Understanding A → B</h2>
+ <div class="panel">
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center">
+   <div style="background:#ffe0ed;padding:18px;border-radius:17px"><div style="font-size:35px">🍞</div><b>Antecedent</b><br>IF bread is bought</div>
+   <div style="font-size:30px;color:#087f5b">➜</div>
+   <div style="background:#d9fbe9;padding:18px;border-radius:17px"><div style="font-size:35px">🧈</div><b>Consequent</b><br>THEN butter is also bought</div>
+  </div>
+  <p>The antecedent is the left-hand side of the rule; the consequent is the right-hand side. This rule describes an observed relationship, not proof that bread causes butter purchases.</p>
+ </div>
+ <h3>Sample transaction dataset</h3>
+ <table>
+  <tr><th>Transaction</th><th>Items purchased</th></tr>
+  <tr><td>T1</td><td>🍞 Bread, 🧈 Butter, 🥛 Milk</td></tr>
+  <tr><td>T2</td><td>🍞 Bread, 🧈 Butter</td></tr>
+  <tr><td>T3</td><td>🍞 Bread, 🥛 Milk</td></tr>
+  <tr><td>T4</td><td>🧈 Butter, 🥛 Milk</td></tr>
+  <tr><td>T5</td><td>🍞 Bread, 🧈 Butter</td></tr>
+ </table>
+ <p class="note">This is a small illustrative dataset created for learning. It is not real customer data.</p>
+</section>
+
+<section>
+ <span class="kicker">03 / THREE IMPORTANT MEASURES</span>
+ <h2>Support, confidence and lift</h2>
+ <div class="card">
+  <h3>📊 Support</h3>
+  <div class="formula">Support(A → B) = count(A and B) / total transactions</div>
+  <p>How often do A and B appear together in the whole dataset?</p>
+ </div>
+ <div class="card" style="margin-top:14px">
+  <h3>🎯 Confidence</h3>
+  <div class="formula">Confidence(A → B) = count(A and B) / count(A)</div>
+  <p>Among transactions containing A, what fraction also contain B?</p>
+ </div>
+ <div class="card" style="margin-top:14px">
+  <h3>🚀 Lift</h3>
+  <div class="formula">Lift(A → B) = Confidence(A → B) / Support(B)</div>
+  <p>How much more often do A and B occur together than expected if they were independent?</p>
+ </div>
+ <div class="panel">
+  <h3>Worked example: Bread → Butter</h3>
+  <p>From the five sample transactions above, bread appears in T1, T2, T3 and T5 (4 transactions). Butter appears in T1, T2, T4 and T5 (4 transactions). Both appear together in T1, T2 and T5 (3 transactions).</p>
+  <div class="formula">Support = 3 / 5 = 0.60 = 60%</div>
+  <div class="formula">Confidence = 3 / 4 = 0.75 = 75%</div>
+  <div class="formula">Lift = 0.75 / (4 / 5) = 0.9375</div>
+  <p>Interpretation: 60% of all transactions contain both items. Of transactions containing bread, 75% also contain butter. The lift is below 1 in this sample, so the pair occurs slightly less often than expected under independence.</p>
+ </div>
+</section>
+
+<section>
+ <span class="kicker">04 / THE ALGORITHM</span>
+ <h2>How does Apriori work?</h2>
+ <p>Apriori finds frequent itemsets using a key idea: if an itemset is frequent, all of its non-empty subsets must also be frequent. If a subset is infrequent, a larger set containing it cannot be frequent.</p>
+ <div class="step"><b>Step 1 — Set minimum support</b><br>Choose a minimum frequency threshold for item combinations.</div>
+ <div class="step"><b>Step 2 — Count individual items</b><br>Calculate support for each item and remove those below the threshold.</div>
+ <div class="step"><b>Step 3 — Create larger candidates</b><br>Combine frequent itemsets to form candidate pairs, triples and so on.</div>
+ <div class="step"><b>Step 4 — Prune candidates</b><br>Remove candidates with any infrequent subset.</div>
+ <div class="step"><b>Step 5 — Repeat</b><br>Count candidates and continue until no larger frequent itemsets remain.</div>
+ <div class="step"><b>Step 6 — Generate rules</b><br>Calculate confidence and optionally lift, then keep rules that meet chosen criteria.</div>
+ <div class="note">Minimum support and confidence are user-selected thresholds. Their appropriate values depend on the dataset and the business question.</div>
+</section>
+
+<section id="demo">
+ <span class="kicker">05 / INTERACTIVE SHOPPING LAB</span>
+ <h2>Build your own basket 🛒</h2>
+ <p>Select products to create a pretend transaction. The demo checks which sample association rules are relevant to your chosen basket.</p>
+ <div class="panel">
+  <b>Tap products to add or remove them:</b>
+  <div class="basket" id="basket">
+   <button class="item selected" data-item="Bread" type="button"><span class="emoji">🍞</span>Bread</button>
+   <button class="item" data-item="Butter" type="button"><span class="emoji">🧈</span>Butter</button>
+   <button class="item" data-item="Milk" type="button"><span class="emoji">🥛</span>Milk</button>
+   <button class="item" data-item="Eggs" type="button"><span class="emoji">🥚</span>Eggs</button>
+   <button class="item" data-item="Coffee" type="button"><span class="emoji">☕</span>Coffee</button>
+   <button class="item" data-item="Cookies" type="button"><span class="emoji">🍪</span>Cookies</button>
+  </div>
+  <div class="controls">
+   <label for="threshold"><b>Minimum confidence:</b></label>
+   <select id="threshold"><option value="50">50%</option><option value="60" selected>60%</option><option value="70">70%</option><option value="80">80%</option><option value="90">90%</option></select>
+   <button class="btn" id="clear" type="button">Clear basket</button>
+  </div>
+  <div class="result" id="demoResult" aria-live="polite">Selected: Bread. The sample rule Bread → Butter has 75% confidence.</div>
+  <p class="note">Teaching simulation: the rules and confidence values below are illustrative, not calculated from the five-row sample dataset.</p>
+ </div>
+</section>
+
+<section>
+ <span class="kicker">06 / WHERE IT HELPS</span>
+ <h2>Real-world applications</h2>
+ <div class="grid">
+  <div class="card"><div class="icon">🛒</div><h3>Retail stores</h3><p>Discover product combinations that may help with product placement and promotions.</p></div>
+  <div class="card"><div class="icon">🍕</div><h3>Food delivery</h3><p>Find common combinations such as meals and drinks in order histories.</p></div>
+  <div class="card"><div class="icon">🎬</div><h3>Recommendations</h3><p>Suggest related products or content based on co-occurrence patterns.</p></div>
+  <div class="card"><div class="icon">🏥</div><h3>Healthcare research</h3><p>Explore co-occurring events or recorded conditions, with careful validation and privacy protection.</p></div>
+  <div class="card"><div class="icon">🌐</div><h3>Web usage</h3><p>Identify pages or actions that commonly appear together in anonymized browsing sessions.</p></div>
+  <div class="card"><div class="icon">🏦</div><h3>Financial services</h3><p>Explore recurring combinations of services or transaction categories.</p></div>
+ </div>
+</section>
+
+<section>
+ <span class="kicker">07 / COMPARE & EVALUATE</span>
+ <h2>Advantages and limitations</h2>
+ <div class="grid">
+  <div class="card"><h3>✅ Advantages</h3><ul><li>Finds understandable co-occurrence patterns.</li><li>Can process large transaction collections with suitable methods.</li><li>Supports recommendation and product-planning ideas.</li><li>Does not require labelled target classes.</li></ul></div>
+  <div class="card"><h3>⚠️ Limitations</h3><ul><li>May generate many rules.</li><li>Rare but useful patterns can be missed by high support thresholds.</li><li>Patterns do not prove causation.</li><li>Apriori can be slow on dense data with many candidates.</li></ul></div>
+  <div class="card"><h3>💡 Best practice</h3><p>Consider support, confidence, lift, business usefulness and validation together. A high confidence rule can be misleading when its consequent is already very common.</p></div>
+ </div>
+ <h2 style="margin-top:30px">Apriori vs. FP-Growth</h2>
+ <table>
+  <tr><th>Feature</th><th>Apriori</th><th>FP-Growth</th></tr>
+  <tr><td>Main approach</td><td>Generates and tests candidate itemsets.</td><td>Builds a compact frequent-pattern tree.</td></tr>
+  <tr><td>Data scans</td><td>Often needs repeated database scans.</td><td>Usually needs fewer scans after tree construction.</td></tr>
+  <tr><td>Best learning use</td><td>Clear step-by-step introduction to frequent itemsets.</td><td>Often more efficient on larger or dense datasets.</td></tr>
+ </table>
+</section>
+
+<section id="quiz">
+ <span class="kicker">08 / QUICK KNOWLEDGE CHECK</span>
+ <h2>Can you crack the rules? 🧠</h2>
+ <div class="panel quiz">
+  <p><b>1. What does support measure?</b></p>
+  <button type="button" data-q="1" data-a="0">A. The price of a product</button>
+  <button type="button" data-q="1" data-a="1">B. The fraction of transactions containing an itemset</button>
+  <button type="button" data-q="1" data-a="0">C. The number of customers in a store</button>
+  <p><b>2. What does confidence of A → B measure?</b></p>
+  <button type="button" data-q="2" data-a="1">A. The fraction of A transactions that also contain B</button>
+  <button type="button" data-q="2" data-a="0">B. The total number of items in the store</button>
+  <button type="button" data-q="2" data-a="0">C. The cost of buying A and B</button>
+  <p><b>3. A lift value greater than 1 generally indicates:</b></p>
+  <button type="button" data-q="3" data-a="0">A. The items never occur together</button>
+  <button type="button" data-q="3" data-a="1">B. The items co-occur more than expected under independence</button>
+  <button type="button" data-q="3" data-a="0">C. The rule proves causation</button>
+  <p><b>4. What is Apriori's key principle?</b></p>
+  <button type="button" data-q="4" data-a="1">A. Every subset of a frequent itemset must also be frequent</button>
+  <button type="button" data-q="4" data-a="0">B. Every product must have the same price</button>
+  <button type="button" data-q="4" data-a="0">C. Every rule must have 100% confidence</button>
+  <p id="feedback" aria-live="polite">Choose an answer to begin!</p>
+  <p id="score">Score: 0 / 4</p>
+  <button class="btn" id="restart" type="button">Restart quiz</button>
+ </div>
+</section>
+
+<section id="conclusion">
+ <span class="kicker">09 / THE FINAL TAKEAWAY</span>
+ <h2>Small patterns. Smarter decisions. 🌈</h2>
+ <p>Association Rule Learning is a useful data-mining technique for discovering items or events that frequently occur together. In Market Basket Analysis, it helps explore customer purchasing patterns and can inform recommendations, promotions and product placement.</p>
+ <p>Support measures how common a pattern is, confidence measures the conditional frequency of a rule, and lift compares that relationship with what would be expected under independence. Apriori uses frequent-itemset properties to reduce unnecessary candidate exploration.</p>
+ <p>However, rules show association rather than causation. Thresholds, data quality, validation and real-world usefulness should all be considered before acting on a discovered pattern.</p>
+ <div class="panel"><h3>⭐ Remember</h3><p>A useful rule is not just frequent — it should also be meaningful, reliable and relevant to the problem.</p></div>
+ <p><b>Submitted by:</b> Sheetal Jaiswar</p>
+ <p><b>Roll No.:</b> 55034</p>
+</section>
+
+<section>
+ <span class="kicker">10 / REFERENCES</span>
+ <h2>Explore further 📚</h2>
+ <div class="card">
+  <p><b>1. IBM — Association Rule Learning</b><br><a href="https://www.ibm.com/think/topics/association-rules" target="_blank" rel="noopener">Read IBM's overview</a></p>
+  <p><b>2. mlxtend — Frequent Patterns</b><br><a href="https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/apriori/" target="_blank" rel="noopener">Read the Apriori documentation</a></p>
+  <p><b>3. Agrawal & Srikant (1994)</b><br>Fast Algorithms for Mining Association Rules. Proceedings of the 20th International Conference on Very Large Data Bases.</p>
+  <p><b>4. Han, Pei & Yin (2000)</b><br>Mining Frequent Patterns without Candidate Generation. Proceedings of the ACM SIGMOD International Conference on Management of Data.</p>
+ </div>
+</section>
+
+<footer>
+ <h2 style="color:white">🛒 MARKET BASKET LAB</h2>
+ <p>Machine Learning College Project</p>
+ <p>Created by Sheetal Jaiswar · Roll No. 55034</p>
+ <p>Discover patterns • Understand data • Learn machine learning</p>
+</footer>
+
+<script>
+const rules=[
+ {from:"Bread",to:"Butter",confidence:75},
+ {from:"Bread",to:"Milk",confidence:50},
+ {from:"Butter",to:"Bread",confidence:75},
+ {from:"Coffee",to:"Cookies",confidence:80},
+ {from:"Cookies",to:"Coffee",confidence:65},
+ {from:"Eggs",to:"Bread",confidence:55},
+ {from:"Milk",to:"Bread",confidence:50}
+];
+const selected=new Set(["Bread"]);
+const result=document.getElementById("demoResult");
+const threshold=document.getElementById("threshold");
+
+function updateBasket(){
+ document.querySelectorAll(".item").forEach(button=>{
+  const active=selected.has(button.dataset.item);
+  button.classList.toggle("selected",active);
+  button.setAttribute("aria-pressed",String(active));
+ });
+ const min=Number(threshold.value);
+ const matches=rules.filter(rule=>selected.has(rule.from)&&!selected.has(rule.to)&&rule.confidence>=min);
+ const names=[...selected];
+ if(names.length===0){
+  result.textContent="Your basket is empty. Select a product to explore sample rules.";
+ }else if(matches.length===0){
+  result.textContent="Basket: "+names.join(", ")+". No displayed sample rule meets the selected confidence threshold.";
+ }else{
+  result.innerHTML="<b>Basket:</b> "+names.join(", ")+"<br><b>Possible sample suggestions:</b> "+matches.map(r=>r.from+" → "+r.to+" ("+r.confidence+"% confidence)").join("; ");
+ }
+}
+document.querySelectorAll(".item").forEach(button=>{
+ button.addEventListener("click",()=>{
+  const item=button.dataset.item;
+  selected.has(item)?selected.delete(item):selected.add(item);
+  updateBasket();
+ });
+});
+threshold.addEventListener("change",updateBasket);
+document.getElementById("clear").addEventListener("click",()=>{
+ selected.clear();updateBasket();
+});
+
+const answers=new Map();
+const total=4;
+document.querySelectorAll(".quiz button[data-q]").forEach(button=>{
+ button.addEventListener("click",()=>{
+  const q=button.dataset.q;
+  if(answers.has(q))return;
+  const correct=button.dataset.a==="1";
+  answers.set(q,correct);
+  button.style.borderColor=correct?"#087f5b":"#ff6b9a";
+  button.style.background=correct?"#d9fbe9":"#fff0f5";
+  document.getElementById("feedback").textContent=correct?"Correct! Well done. ✓":"Not quite — review the topic and try the next question.";
+  const score=[...answers.values()].filter(Boolean).length;
+  document.getElementById("score").textContent="Score: "+score+" / "+total;
+  if(answers.size===total){
+   document.getElementById("feedback").textContent+=" Quiz complete!";
+  }
+ });
+});
+document.getElementById("restart").addEventListener("click",()=>{
+ answers.clear();
+ document.querySelectorAll(".quiz button[data-q]").forEach(button=>{
+  button.style.borderColor="";
+  button.style.background="";
+ });
+ document.getElementById("feedback").textContent="Choose an answer to begin!";
+ document.getElementById("score").textContent="Score: 0 / 4";
+});
+updateBasket();
+</script>
+</body>
+</html>
